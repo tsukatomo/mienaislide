@@ -379,8 +379,8 @@ phina.define('Game',{
             }
             return;
         }
-        // ツイート文を生成＆ツイート
-        let tweet = function() {
+        // ツイート文,URLを生成
+        let makeTweet = function() {
             let text = (cheating === 0) ? "一度も数字を見ずに" : cheating + "回数字を見て";
             text += (puzzleSize === 3) ? "8" : "15";
             text += "パズルをクリア！\n"
@@ -390,7 +390,7 @@ phina.define('Game',{
                 text: text,
                 hashtags: '見えないスライドパズル'
             });
-            window.open(url, 'share window', 'width=480, height=320');
+            return url;
         };
         // ------------------------------------------------------------------------------------//
         // ピース配置の配列を初期化
@@ -537,7 +537,7 @@ phina.define('Game',{
         }).addChildTo(this).setPosition(this.gridX.center(-4), 1200);
         tweetButton.setInteractive(false);
         tweetButton.onpointstart = function() {
-            tweet();
+            window.open(makeTweet(), 'share window', 'width=480, height=320');
         };
         Label({
             text: "ツイート",
