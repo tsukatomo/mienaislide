@@ -37,6 +37,7 @@ phina.define('Title',{
             //height: SCREEN_HEIGHT
         });
         this.backgroundColor = 'yellowgreen'
+        let isDarkSide = false;
         let self = this;
         // タイトル
         let titleLabel = Label({
@@ -46,7 +47,7 @@ phina.define('Title',{
             strokeWidth: 12,
             fontSize: 72,
             fontFamily: FONT_FAMILY
-        }).addChildTo(this).setPosition(this.gridX.center(), this.gridY.center(-3));
+        }).addChildTo(this).setPosition(this.gridX.center(), this.gridY.center(-2));
         titleLabel.tweener
             .moveBy(0, -48, 2000, 'easeInOutCubic')
             .moveBy(0,  48, 2000, 'easeInOutCubic')
@@ -71,6 +72,22 @@ phina.define('Title',{
             fontSize: 32,
             fontFamily: FONT_FAMILY
         }).addChildTo(howToButton);
+        // ウラボタン(onpointstartは下部に記載)
+        let darkSideButton = RectangleShape({
+            width: (PIECE_SIZE - 16) * 2,
+            height: 72,
+            fill: 'brown',
+            stroke: 'darkred',
+            strokeWidth: 12,
+            cornerRadius: 10
+        }).addChildTo(this);
+        darkSideButton.setInteractive(true);
+        let darkSideLabel = Label({
+            text: "裏へ",
+            fill: 'white',
+            fontSize: 32,
+            fontFamily: FONT_FAMILY
+        }).addChildTo(darkSideButton);
         // スタートボタン(8)
         let start8Button = RectangleShape({
             width: (PIECE_SIZE - 16) * 2,
@@ -82,9 +99,9 @@ phina.define('Title',{
         }).addChildTo(this);
         start8Button.setInteractive(true);
         start8Button.onpointstart = function() {
-            self.exit({ puzzleSize: 3 });
+            self.exit({ puzzleSize: 3, isDarkSide: isDarkSide });
         };
-        Label({
+        let start8Label = Label({
             text: "８パズル",
             fill: 'white',
             fontSize: 32,
@@ -101,20 +118,71 @@ phina.define('Title',{
         }).addChildTo(this);
         start15Button.setInteractive(true);
         start15Button.onpointstart = function() {
-            self.exit({ puzzleSize: 4 });
+            self.exit({ puzzleSize: 4, isDarkSide: isDarkSide });
         };
-        Label({
+        let start15Label = Label({
             text: "１５パズル",
             fill: 'white',
             fontSize: 32,
             fontFamily: FONT_FAMILY
         }).addChildTo(start15Button);
-        //ボタン配置
+        // わんど様作・Dualバージョンへの移行ボタン
+        let dualButton = RectangleShape({
+            width: (PIECE_SIZE - 16) * 3,
+            height: 48,
+            fill: '#0C3310',
+            stroke: 'black',
+            strokeWidth: 12,
+            cornerRadius: 10
+        }).addChildTo(this);
+        dualButton.setInteractive(true);
+        dualButton.onpointstart = function() {
+            window.location.href = "https://wand125.github.io/mienaislide/?v=2"
+        };
+        Label({
+            text: "→ Dualへ（作・わんど様）",
+            fill: 'white',
+            fontSize: 24,
+            fontFamily: FONT_FAMILY
+        }).addChildTo(dualButton);
+        // ウラボタンを押したときの反応
+        darkSideButton.onpointstart = function() {
+            if (!isDarkSide) {
+                start8Label.text = "裏８";
+                start15Label.text = "裏１５";
+                darkSideLabel.text = "表へ";
+                start8Button.fill = 'brown';
+                start15Button.fill = 'brown';
+                start8Button.stroke = 'darkred';
+                start15Button.stroke = 'darkred';
+                darkSideButton.fill = 'darkorange';
+                darkSideButton.stroke = 'chocolate';
+                self.backgroundColor = 'plum';
+            }
+            else {
+                start8Label.text = "８パズル";
+                start15Label.text = "１５パズル";
+                darkSideLabel.text = "裏へ";
+                start8Button.fill = 'darkorange';
+                start15Button.fill = 'darkorange';
+                start8Button.stroke = 'chocolate';
+                start15Button.stroke = 'chocolate';
+                darkSideButton.fill = 'brown';
+                darkSideButton.stroke = 'darkred';
+                self.backgroundColor = 'yellowgreen';
+            }
+            isDarkSide = !isDarkSide;
+            darkSideButton.tweener
+                .scaleTo(0.90, 50)
+                .scaleTo(1.00, 50)
+                .play();
+        };
+        // ボタン配置
         start8Button.setPosition(this.gridX.center(-4), this.gridY.center(3));
         start15Button.setPosition(this.gridX.center(4), this.gridY.center(3));
-        howToButton.setPosition(this.gridX.center(0), this.gridY.center(6));
-
-        
+        howToButton.setPosition(this.gridX.center(-4), this.gridY.center(6));
+        darkSideButton.setPosition(this.gridX.center(4), this.gridY.center(6));
+        dualButton.setPosition(this.gridX.center(3), this.gridY.center(-7));        
     },
     update: function(app){
         /*
@@ -140,11 +208,11 @@ phina.define('HowToPlay',{
         let self = this;
         // 遊び方
         Label({
-            text: "~遊び方~\n\n\n\n\nスライドパズルを完成させましょう。\n\nただし、ピースを動かした瞬間に\n書かれている数字が全て見えなくなります。\n\n最初の配置をよく覚えてから動かしましょう。\n\n数字を確認できるボタンもありますが、\nできるだけ使わずに解いてみましょう。",
+            text: "●遊び方●\n\n\nスライドパズルを完成させましょう。\n\nただし、ピースを動かした瞬間に\n書かれている数字が全て見えなくなります。\n\n最初の配置をよく覚えてから動かしましょう。\n\n数字を確認できるボタンもありますが、\nできるだけ使わずに解いてみましょう。\n\n\n\n●ウラモード●\n\n\n数字を確認するボタンはありません。\n\nピース配置を記憶する時間も計測されます。",
             fill: 'white',
             fontSize: 24,
             fontFamily: FONT_FAMILY
-        }).addChildTo(this).setPosition(this.gridX.center(0), this.gridY.center(-3));
+        }).addChildTo(this).setPosition(this.gridX.center(0), this.gridY.center(-2));
         // 戻るボタン
         let backButton = RectangleShape({
             width: (PIECE_SIZE - 16) * 2,
@@ -153,7 +221,7 @@ phina.define('HowToPlay',{
             stroke: 'darkslateblue',
             strokeWidth: 12,
             cornerRadius: 10
-        }).addChildTo(this).setPosition(this.gridX.center(0), this.gridY.center(6));
+        }).addChildTo(this).setPosition(this.gridX.center(-4), this.gridY.center(6));
         backButton.setInteractive(true);
         backButton.onpointstart = function() {
             self.exit();
@@ -185,7 +253,10 @@ phina.define('Game',{
             //width: SCREEN_WIDTH,
             //height: SCREEN_HEIGHT
         });
-        this.backgroundColor = 'yellowgreen';
+        // オモテウラ情報を前シーンから受け取る
+        let isDarkSide = param.isDarkSide;
+        // 背景色
+        this.backgroundColor = isDarkSide ? 'plum' : 'yellowgreen';
         // this退避
         let self = this;
         // パズルサイズを前シーンから受け取る
@@ -195,8 +266,10 @@ phina.define('Game',{
         // 変数
         let moves = 0; // 手数
         let time = 0;  // 経過時間
+        let lookTime = 0; // ピースを見ている時間（ウラ限定）
         let cheating = 0; // カンニング回数
         let isTimeCounting = false; // タイム計測中か否か
+        let isLookTimeCounting = false; // 記憶時間の計測中か否か
         let isCheating = false; // カンニング中か否か
         // sprites
         let piece = Array(puzzleSize * puzzleSize - 1);
@@ -381,9 +454,18 @@ phina.define('Game',{
         }
         // ツイート文,URLを生成
         let makeTweet = function() {
-            let text = (cheating === 0) ? "一度も数字を見ずに" : cheating + "回数字を見て";
+            let text;
+            if (!isDarkSide) {
+                text = (cheating === 0) ? "一度も数字を見ずに" : cheating + "回数字を見て";
+            }
+            else {
+                text = "裏モードで";
+            }
             text += (puzzleSize === 3) ? "8" : "15";
             text += "パズルをクリア！\n"
+            if (isDarkSide) {
+                text += "記憶時間：" + (Math.floor(lookTime / 10) / 100).toFixed(2) + "秒\n";
+            }
             text += "クリアタイム：" + (Math.floor(time / 10) / 100).toFixed(2) + "秒\n";
             text += "手数：" + moves;
             let url = phina.social.Twitter.createURL({
@@ -415,7 +497,7 @@ phina.define('Game',{
             }).addChildTo(this).setPosition(0,0);
             piece[i].x = getPositionByNumber(puzzleSize, piecePos.indexOf(i)).x;
             piece[i].y = getPositionByNumber(puzzleSize, piecePos.indexOf(i)).y;
-            piece[i].setInteractive(true);
+            piece[i].setInteractive(!isDarkSide); // ウラモードのときはカウントが終わるまで移動不可にする
             // クリックイベント
             piece[i].onpointstart = function() {
                 // ピースをスライド（スライド失敗ならreturn）
@@ -425,7 +507,8 @@ phina.define('Game',{
                 hideNum();
                 isCheating = false;
                 cheatingLabel.fill = 'white';
-                // 時間計測開始
+                // 記憶時間計測終了，時間計測開始
+                isLookTimeCounting = false;
                 isTimeCounting = true;
                 // ピースの位置を更新
                 for (let j = 0; j < piece.length; j++) {
@@ -443,14 +526,14 @@ phina.define('Game',{
                         .call(()=>{
                             // 再びクリック可能に
                             setPieceInteractive(true);
-                            cheatingButton.setInteractive(true);
+                            cheatingButton.setInteractive(!isDarkSide); // ウラモード時はクリック不可
                         })
                         .call(()=>{ clearCheck(); }) // 成功判定
                         .play();
                 }
             }
             numLabel[i] = Label({
-                text: i + 1,
+                text: (isDarkSide) ? "?" : i + 1,
                 fill: 'white',
                 fontSize: 48,
                 fontFamily: FONT_FAMILY 
@@ -464,7 +547,8 @@ phina.define('Game',{
             stroke: 'darkred',
             strokeWidth: 12,
             cornerRadius: 10
-        }).addChildTo(this).setPosition(this.gridX.center(), this.gridY.center(6));
+        }).addChildTo(this)
+        cheatingButton.setPosition(this.gridX.center(), isDarkSide ? 9999 : this.gridY.center(6));
         let cheatingLabel = Label({
             text: "数字を見る",
             fill: 'gray',
@@ -505,6 +589,34 @@ phina.define('Game',{
             fontSize: 24,
             fontFamily: FONT_FAMILY
         }).addChildTo(quitButton);
+        // カウントダウン（ウラモード）
+        if (isDarkSide) {
+            let countLabel = Label({
+                text: "3",
+                fill: 'white',
+                stroke: 'darkslateblue',
+                strokeWidth: 12,
+                fontSize: 96,
+                fontFamily: FONT_FAMILY
+            }).addChildTo(this).setPosition(this.gridX.center(-24), this.gridY.center(6));
+            // カウントダウンアニメーション
+            countLabel.tweener
+                .moveTo(this.gridX.center(), this.gridY.center(6), 500, 'easeOutCubic')
+                .wait(500)
+                .set({text: "2"})
+                .wait(1000)
+                .set({text: "1"})
+                .wait(1000)
+                .set({text: "START!", stroke: 'darkred'})
+                .call(()=>{
+                    showNum();
+                    for (let i = 0; i < piece.length; i++) piece[i].setInteractive(true);
+                    isLookTimeCounting = true;
+                })
+                .wait(1000)
+                .moveTo(this.gridX.center(24), this.gridY.center(6), 500, 'easeInCubic')
+                .play();
+        }
         // 経過時間表示ラベル
         let timeLabel = Label({
             text: "時間\n" + (Math.floor(time / 10) / 100).toFixed(2) + "s",
@@ -526,6 +638,15 @@ phina.define('Game',{
             fontSize: 36,
             fontFamily: FONT_FAMILY
         }).addChildTo(this).setPosition(this.gridX.center(5), this.gridY.center(-5.5));
+        if (isDarkSide) cheatNumLabel.hide();
+        // 記憶時間表示ラベル
+        let lookTimeLabel = Label({
+            text: "記憶\n" + (Math.floor(time / 10) / 100).toFixed(2) + "s",
+            fill: 'darkslateblue',
+            fontSize: 36,
+            fontFamily: FONT_FAMILY
+        }).addChildTo(this).setPosition(this.gridX.center(5), this.gridY.center(-5.5));
+        if (!isDarkSide) lookTimeLabel.hide();
         // ツイートボタン
         let tweetButton = RectangleShape({
             width: (PIECE_SIZE - 16) * 2,
@@ -573,6 +694,11 @@ phina.define('Game',{
                 time += app.deltaTime;
                 if (time > MAX_TIME) time = MAX_TIME;
             }
+            // 記憶時間表示
+            if (isLookTimeCounting) {
+                lookTime += app.deltaTime;
+                if (lookTime > MAX_TIME) lookTime = MAX_TIME;
+            }
             if (isCheating) {
                 cheatingButton.fill = "darkorange";
                 cheatingButton.stroke = "chocolate";
@@ -582,6 +708,7 @@ phina.define('Game',{
                 cheatingButton.stroke = "darkred";
             }
             timeLabel.text = "時間\n" + (Math.floor(time / 10) / 100).toFixed(2) + "s";
+            lookTimeLabel.text = "記憶\n" + (Math.floor(lookTime / 10) / 100).toFixed(2) + "s";
             movesLabel.text = "手数\n" + moves;
             cheatNumLabel.text = "見た回数\n" + cheating;
             // キーボード
