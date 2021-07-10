@@ -208,7 +208,7 @@ phina.define('HowToPlay',{
         let self = this;
         // 遊び方
         Label({
-            text: "●遊び方●\n\n\nスライドパズルを完成させましょう。\n\nただし、ピースを動かした瞬間に\n書かれている数字が全て見えなくなります。\n\n最初の配置をよく覚えてから動かしましょう。\n\n数字を確認できるボタンもありますが、\nできるだけ使わずに解いてみましょう。\n\n\n\n●ウラモード●\n\n\n数字を確認するボタンはありません。\n\nピース配置を記憶する時間も計測されます。",
+            text: "●遊び方●\n\n\nスライドパズルを完成させましょう。\n\nただし、ピースを動かした瞬間に\n書かれている数字が全て見えなくなります。\n\n最初の配置をよく覚えてから動かしましょう。\n\n数字を確認できるボタンもありますが、\nできるだけ使わずに解いてみましょう。\n\n\n\n●裏モード●\n\n\n数字を確認するボタンはありません。\n\nピース配置を記憶する時間も計測されます。",
             fill: 'white',
             fontSize: 24,
             fontFamily: FONT_FAMILY
@@ -391,8 +391,11 @@ phina.define('Game',{
             cheatingButton.tweener
                 .moveBy(0, 999, 400)
                 .play();
+            // ギブアップボタンを使用不能に
+            giveUpButton.setInteractive(false);
             // 時間計測を停止
             isTimeCounting = false;
+            isLookTimeCounting = false;
             // おめでとうラベル
             let cong = Label({
                 text: "Congratulations!!",
@@ -427,6 +430,41 @@ phina.define('Game',{
             titleButton.tweener
                 .wait(1000)
                 .moveTo(self.gridX.center(4), self.gridY.center(6), 1000, 'easeOutCubic')
+                .call(() => { titleButton.setInteractive(true); })
+                .play();
+            return true;
+        };
+        // ギブアップ処理
+        let giveUp = function() {
+            // 数字を表示
+            showNum();
+            // ピースを移動不能にして，色を変更
+            setPieceInteractive(false);
+            // カンニングボタンを使用不能にし，下げる
+            cheatingButton.setInteractive(false);
+            cheatingButton.tweener
+                .moveBy(0, 999, 400)
+                .play();
+            // 時間計測を停止
+            isTimeCounting = false;
+            isLookTimeCounting = false;
+            // 失敗ラベル
+            let fail = Label({
+                text: "Failed...",
+                fill: 'white',
+                stroke: '#333333',
+                fontSize: 48,
+                strokeWidth: 12,
+                fontFamily: FONT_FAMILY,
+            }).addChildTo(self).setPosition(self.gridX.center(), self.gridY.center(-16));
+            fail.tweener
+                .moveTo(self.gridX.center(), self.gridY.center(-4), 1000, 'easeOutBounce')
+                .play();
+            // タイトルへ戻るボタンを表示
+            titleButton.tweener
+                .wait(1000)
+                .set({x: self.gridX.center(0)})
+                .moveTo(self.gridX.center(0), self.gridY.center(6), 1000, 'easeOutCubic')
                 .call(() => { titleButton.setInteractive(true); })
                 .play();
             return true;
@@ -589,6 +627,24 @@ phina.define('Game',{
             fontSize: 24,
             fontFamily: FONT_FAMILY
         }).addChildTo(quitButton);
+        // ギブアップボタン
+        giveUpButton = RectangleShape({
+            width: 144,
+            height: 48,
+            fill: '#505050',
+            stroke: '#333333',
+            strokeWidth: 12,
+        }).addChildTo(this).setPosition(this.width - 96, 48);
+        giveUpButton.setInteractive(!isDarkSide);
+        giveUpButton.one('pointstart', function() {
+            giveUp();
+        });
+        Label({
+            text: "ギブアップ",
+            fill: 'white',
+            fontSize: 24,
+            fontFamily: FONT_FAMILY
+        }).addChildTo(giveUpButton);
         // カウントダウン（ウラモード）
         if (isDarkSide) {
             let countLabel = Label({
@@ -610,8 +666,9 @@ phina.define('Game',{
                 .set({text: "START!", stroke: 'darkred'})
                 .call(()=>{
                     showNum();
-                    for (let i = 0; i < piece.length; i++) piece[i].setInteractive(true);
+                    setPieceInteractive(true);
                     isLookTimeCounting = true;
+                    giveUpButton.setInteractive(true);
                 })
                 .wait(1000)
                 .moveTo(this.gridX.center(24), this.gridY.center(6), 500, 'easeInCubic')
